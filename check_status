@@ -1,0 +1,3 @@
+#!/bin/sh
+
+mongosh "mongodb://root:root@127.0.0.1:27020/foo?replicaSet=rs0" --authenticationDatabase admin --eval "rs.status()" 
