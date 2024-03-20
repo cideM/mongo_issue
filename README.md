@@ -21,5 +21,43 @@ Connecting to:          mongodb://<credentials>@127.0.0.1:27020/foo?replicaSet=r
 MongoNetworkError: getaddrinfo ENOTFOUND mongo
 ```
 
-If you modify the Docker Compose setup, make sure to delete the volume that holds the MongoDB data. Otherwise changes might not be picked up.
+If you modify the Docker Compose setup, make sure to delete the volume that holds the MongoDB data with `docker compose down --volumes`. Otherwise changes might not be picked up.
+
+## Possible solutions
+
+### Modify the `hosts` file
+
+The solution should be self-contained, and not require any manual setup on the host machine. This is why I'm not considering this solution.
+
+### `network_mode: host`
+
+Doesn't work on MacOS. Applying the following Git diff won't work, likely due to [this issue](https://github.com/docker/for-mac/issues/1031).
+
+```diff
+    diff --git a/docker-compose.yml b/docker-compose.yml
+    index 9c268c0..7d5c8d6 100644
+    --- a/docker-compose.yml
+    +++ b/docker-compose.yml
+    @@ -13,6 +13,7 @@ services:
+         ]
+     
+       mongo:
+    +    network_mode: "host"
+         build:
+           context: .
+           args:
+    @@ -20,11 +21,9 @@ services:
+         environment:
+           MONGO_INITDB_ROOT_USERNAME: root
+           MONGO_INITDB_ROOT_PASSWORD: root
+    -      MONGO_REPLICA_HOST: mongo
+    +      MONGO_REPLICA_HOST: localhost
+           MONGO_REPLICA_PORT: 27020
+           MONGO_COMMAND: "mongosh"
+    -    ports:
+    -      - "27020:27020"
+         restart: unless-stopped
+         healthcheck:
+           test: [ "CMD", "mongosh", "admin", "--port", "$$MONGO_REPLICA_PORT", "--eval", "db.adminCommand('ping').ok" ]
+```
 
