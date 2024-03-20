@@ -65,4 +65,32 @@ Doesn't work on MacOS. Applying the following Git diff won't work, likely due to
 
 ### `extra_hosts`
 
-**This seems to be the correct solution and it was tested on MacOS and Linux.** Run the MongoDB service in the Docker Compose network, but expose its port so we can connect to it from the host. Next, make other Docker Compose services connect to the host by mapping `localhost` to the `host-gateway`. You can't just use `host.docker.internal`, because the replica set is listening for connections on `localhost`.
+**This seems to be the correct solution and it was tested on MacOS and Linux.** Run the MongoDB service in the Docker Compose network, but expose its port so we can connect to it from the host. Next, make other Docker Compose services connect to the host by mapping `localhost` to the `host-gateway`. You can't just use `host.docker.internal`, because the replica set is listening for connections on `localhost`. See the Git diff:
+
+```diff
+diff --git a/docker-compose.yml b/docker-compose.yml
+index 9c268c0..1915d80 100644
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -4,8 +4,10 @@ services:
+   app:
+     image: mongo:5
+     entrypoint: mongosh 
++    extra_hosts:
++      - "localhost:host-gateway"
+     command: [ 
+-      "mongodb://root:root@mongo:27020/foo?replicaSet=rs0",
++      "mongodb://root:root@localhost:27020/foo?replicaSet=rs0",
+       "--authenticationDatabase",
+       "admin",
+       "--eval",
+@@ -20,7 +22,7 @@ services:
+     environment:
+       MONGO_INITDB_ROOT_USERNAME: root
+       MONGO_INITDB_ROOT_PASSWORD: root
+-      MONGO_REPLICA_HOST: mongo
++      MONGO_REPLICA_HOST: localhost
+       MONGO_REPLICA_PORT: 27020
+       MONGO_COMMAND: "mongosh"
+     ports:
+```
