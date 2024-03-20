@@ -1,5 +1,7 @@
 # Trying and failing to setup MongoDB locally
 
+**The solution is to use the `extra_hosts` option in the `docker-compose.yml` file.** See the [`extra_hosts`](#extra_hosts) section for more details.
+
 This repository demonstrates the difficulty with setting up MongoDB locally using Docker Compose. The goal is to have a MongoDB replica set running as a Docker Compose service, and being able to connect to it from the host and from another Docker Compose service.
 
 The setup is modeled after [this link](https://github.com/prisma/prisma/discussions/22442%C2%AC). I also read [this issue](https://github.com/prisma/docs/issues/3040).
@@ -61,3 +63,6 @@ Doesn't work on MacOS. Applying the following Git diff won't work, likely due to
            test: [ "CMD", "mongosh", "admin", "--port", "$$MONGO_REPLICA_PORT", "--eval", "db.adminCommand('ping').ok" ]
 ```
 
+### `extra_hosts`
+
+**This seems to be the correct solution and it was tested on MacOS and Linux.** Run the MongoDB service in the Docker Compose network, but expose its port so we can connect to it from the host. Next, make other Docker Compose services connect to the host by mapping `localhost` to the `host-gateway`. You can't just use `host.docker.internal`, because the replica set is listening for connections on `localhost`.
