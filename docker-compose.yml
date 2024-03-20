@@ -27,7 +27,7 @@ services:
       - "27020:27020"
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "mongosh", "admin", "--port", "27020", "--eval", "db.adminCommand('ping').ok" ]
+      test: [ "CMD", "mongosh", "admin", "--port", "$$MONGO_REPLICA_PORT", "--eval", "db.adminCommand('ping').ok" ]
       interval: 5s
       timeout: 2s
       retries: 20
